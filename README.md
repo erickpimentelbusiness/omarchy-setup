@@ -300,7 +300,7 @@ omarchy install editor vscode
 
 | App | Notes |
 |---|---|
-| **Android Studio** | Downloads the Android SDK on first launch. See section 10 for disk space. |
+| **Android Studio** | Downloads the Android SDK on first launch. |
 | **IntelliJ IDEA** | JetBrains merged the editions into one product. Core features are free; Ultimate features need a subscription. |
 | **RustRover** | Pick the free **"Non-commercial use"** license on first launch. |
 | **Antigravity** | Google's AI editor. The AUR package downloads straight from Google's servers. |
@@ -317,54 +317,15 @@ Once `rustrover-jre` is installed, delete that file so RustRover uses its own ru
 
 ---
 
-## 10. Disk space: Android emulator on the external SSD
-
-**Why:** Omarchy lives on a small 65 GB partition (the rest of the NVMe is Windows). The Android system images (~8 GB) and the virtual devices (12 GB+ each) don't fit, and the emulator fails with `Not enough space to create userdata partition`.
-
-**Fix:** keep them on the external Samsung T7 SSD (mounted at `/run/media/<user>/SSD`, exFAT) and leave symlinks in the original places. Android Studio keeps using the usual paths.
-
-Close the emulator and Android Studio first. Then:
-
-```bash
-SSD=/run/media/$USER/SSD
-mkdir -p "$SSD/Android"
-
-# Virtual devices (AVDs)
-cp -a ~/.android/avd "$SSD/Android/avd" && rm -rf ~/.android/avd
-ln -s "$SSD/Android/avd" ~/.android/avd
-
-# System images
-cp -a ~/Android/Sdk/system-images "$SSD/Android/system-images" && rm -rf ~/Android/Sdk/system-images
-ln -s "$SSD/Android/system-images" ~/Android/Sdk/system-images
-```
-
-On a new machine, if the SSD already has these folders, **only create the two symlinks**.
-
-**Caveat:** the SSD must be plugged in to use the emulator. Without it, Android Studio says the devices don't exist. Nothing is lost; plug it back in.
-
-### Other disk cleanup
-
-```bash
-rm -rf ~/.cache/yay/*/          # leftover AUR build files (GBs after installing IDEs)
-sudo paccache -rk1              # keep only the latest cached package version
-sudo snapper -c root list       # list system snapshots; delete old ones with:
-# sudo snapper -c root delete <number-or-range>
-```
-
-On btrfs, deleted files keep using space until the snapshots that reference them are removed.
-
----
-
-## 11. Things I tried and removed
+## 10. Things I tried and removed
 
 - **Voxtype (voice dictation):** didn't like it. Removed with `omarchy voxtype remove`. If Omarchy invites you to install it after an update, ignore it.
 - **Stremio:** the AUR install got stuck before the first system update, then hit an AUR rate limit. Not installed. Options if I want it later: `omarchy pkg aur add stremio` (full app, compiles from source), the Flathub Flatpak, or the web app at `web.stremio.com`.
 
 ---
 
-## 12. Pending / ideas for the future
+## 11. Pending / ideas for the future
 
-- [ ] **Bigger Omarchy partition:** shrink the Windows partition from **inside Windows** (Disk Management → Shrink Volume, with Fast Startup disabled), then create a new partition for Omarchy (e.g. mounted at `~/Dev`) for the Android SDK, projects, Gradle and Rust. That removes the dependency on the external SSD.
 - [ ] **VS Code:** `omarchy install editor vscode` (needs `omarchy update` first)
 - [ ] **`rustrover-jre`:** install it and remove the IntelliJ runtime workaround (section 9.2)
 - [ ] **Key repeat:** if keys repeat when held a bit too long, raise `repeat_delay` (Omarchy uses 250 ms) in `~/.config/hypr/input.lua`, e.g. to 400–500 ms

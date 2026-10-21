@@ -4,7 +4,7 @@ Everything I configured on top of a fresh [Omarchy](https://omarchy.org/) instal
 
 - **Base:** Omarchy 4.0.5 (Arch Linux + Hyprland 0.56, Lua config)
 - **Hardware it was made on:** AMD Ryzen 7 5800X, NVIDIA RTX 3070, 55" 4K TV over HDMI (`HDMI-A-1`)
-- **Last updated:** 2026-10-18
+- **Last updated:** 2026-10-21
 
 Each section lists **what** was changed, **why**, and the **exact commands or file contents** to apply it. Commands that need `sudo` will ask for your password.
 
@@ -314,6 +314,23 @@ echo "/opt/intellij-idea-ultimate-edition/jbr" > ~/.config/JetBrains/RustRover20
 ```
 
 Once `rustrover-jre` is installed, delete that file so RustRover uses its own runtime.
+
+---
+
+## 9.3 Screen stays on for 8 hours
+
+**Why:** Omarchy starts the screensaver after 2.5 minutes and locks after 5 minutes, and the display turns off 5 seconds after locking. Too fast for a desktop PC.
+
+**File:** `~/.config/omarchy/shell.json`. Set both timeouts (in seconds) to 8 hours:
+
+```json
+"idle": {
+  "screensaver": 28800,
+  "lock": 28800
+},
+```
+
+The shell reloads the file on save, no restart needed. The screen locks and turns off only after 8 hours idle.
 
 ---
 

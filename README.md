@@ -385,6 +385,12 @@ ollama pull gemma4:26b
 ollama pull qwen3.6:35b
 # Reasoning (shows its thinking, fits fully in VRAM)
 ollama pull deepseek-r1:8b
+# Uncensored (refusals removed by the community; less reliable, double-check facts)
+ollama pull hf.co/mradermacher/gemma-4-26B-A4B-it-ultra-uncensored-heretic-i1-GGUF:Q4_K_M
+ollama pull huihui_ai/qwen3-abliterated:30b
+ollama pull huihui_ai/gpt-oss-abliterated:20b
+ollama pull dolphin3:8b
+ollama pull hermes3:8b
 ```
 
 Tried and removed: **Foundation-Sec-8B-Reasoning** (Cisco's security model). Weak answers, and Open WebUI needed `function_calling: legacy` plus builtin tools off for it to work at all.

@@ -383,8 +383,11 @@ ollama pull qwen2.5-coder:1.5b    # autocomplete / small tasks
 # Privacy and security discussions
 ollama pull gemma4:26b
 ollama pull qwen3.6:35b
-ollama pull hf.co/fdtn-ai/Foundation-Sec-8B-Reasoning-Q4_K_M-GGUF   # Cisco security specialist
+# Reasoning (shows its thinking, fits fully in VRAM)
+ollama pull deepseek-r1:8b
 ```
+
+Tried and removed: **Foundation-Sec-8B-Reasoning** (Cisco's security model). Weak answers, and Open WebUI needed `function_calling: legacy` plus builtin tools off for it to work at all.
 
 ### OpenCode
 

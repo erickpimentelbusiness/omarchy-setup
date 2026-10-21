@@ -334,6 +334,70 @@ The shell reloads the file on save, no restart needed. The screen locks and turn
 
 ---
 
+## 9.4 Local AI: Ollama, Open WebUI and OpenCode
+
+**Why:** Run coding and privacy/security models locally, with nothing leaving the machine. The NVMe is almost full, so everything lives on the 2 TB external SSD (Samsung T7 Shield).
+
+**Layout:**
+
+| Path | What | Filesystem |
+|---|---|---|
+| `/mnt/ssd` | The whole SSD, shared with Windows (games) | exFAT |
+| `/mnt/ssd/ai/ollama/models` | Ollama models | exFAT |
+| `/mnt/ssd/linux-ai.img` → `/mnt/ai` | 30 GB Linux disk image: Ollama binaries, Docker, Open WebUI | ext4 (loop) |
+
+The SSD stays exFAT so nothing had to be erased. Docker and Ollama's binaries need a Linux filesystem (permissions, symlinks), hence the small ext4 image. Models are plain big files, so they sit directly on exFAT with 1.6 TB free.
+
+**Gotchas I hit:**
+- **Cable:** the SSD ran at USB 2.0 (480 Mbps, ~35 MB/s) with the wrong cable. Use the T7's original USB 3.2 cable. Check the link speed with `cat /sys/block/sdX/device/../../../../speed` (5000 or 10000 = USB 3).
+- **exFAT zero-fills a file before writing past its end.** Creating a 300 GB image took hours, so the image is 30 GB. Grow it later with `fallocate` + `resize2fs` if needed.
+
+### Root part (run once)
+
+[`scripts/ai-setup-root.sh`](scripts/ai-setup-root.sh): adds `/mnt/ssd` and `/mnt/ai` to `/etc/fstab` (both `nofail`, so boot works without the SSD), creates the image, moves Docker's `data-root` to `/mnt/ai/docker` and starts Open WebUI on `127.0.0.1:3000` (no login, no telemetry, not reachable from the network).
+
+```bash
+sudo bash scripts/ai-setup-root.sh
+```
+
+### Ollama (no sudo)
+
+```bash
+mkdir -p /mnt/ai/ollama /mnt/ssd/ai/ollama/models
+curl -fsSL https://github.com/ollama/ollama/releases/download/v0.40.7/ollama-linux-amd64.tar.zst | tar --zstd -x -C /mnt/ai/ollama
+ln -sf /mnt/ai/ollama/bin/ollama ~/.local/bin/ollama
+cp configs/ollama.service ~/.config/systemd/user/
+systemctl --user daemon-reload && systemctl --user enable --now ollama
+```
+
+[`configs/ollama.service`](configs/ollama.service) runs Ollama as my user (starts at login), models on the SSD, 32k context, q8 KV cache and one model loaded at a time (8 GB VRAM + 32 GB RAM).
+
+### Models
+
+```bash
+# Coding
+ollama pull qwen3-coder:30b       # main coding agent, ~30 tok/s on the RTX 3070
+ollama pull glm-4.7-flash
+ollama pull gpt-oss:20b
+ollama pull qwen2.5-coder:1.5b    # autocomplete / small tasks
+# Privacy and security discussions
+ollama pull gemma4:26b
+ollama pull qwen3.6:35b
+ollama pull hf.co/fdtn-ai/Foundation-Sec-8B-Reasoning-Q4_K_M-GGUF   # Cisco security specialist
+```
+
+### OpenCode
+
+`cp configs/opencode.json ~/.config/opencode/opencode.json`. [`configs/opencode.json`](configs/opencode.json) points OpenCode at Ollama, defaults to `qwen3-coder:30b` and asks before running shell commands or editing files.
+
+### Daily use
+
+- **Chat (privacy/security):** open http://127.0.0.1:3000 and pick a model at the top.
+- **Coding agent:** `opencode` inside a project folder.
+- **Models loaded right now:** `ollama ps`. Switching models takes ~10–30 s.
+
+---
+
 ## 10. Things I tried and removed
 
 - **Voxtype (voice dictation):** didn't like it. Removed with `omarchy voxtype remove`. If Omarchy invites you to install it after an update, ignore it.

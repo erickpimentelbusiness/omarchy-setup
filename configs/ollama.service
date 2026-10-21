@@ -1,0 +1,19 @@
+[Unit]
+Description=Ollama (local LLM server, models on the external SSD)
+RequiresMountsFor=/mnt/ai /mnt/ssd
+After=network-online.target
+
+[Service]
+ExecStart=/mnt/ai/ollama/bin/ollama serve
+Environment=OLLAMA_HOST=127.0.0.1:11434
+Environment=OLLAMA_MODELS=/mnt/ssd/ai/ollama/models
+Environment=OLLAMA_CONTEXT_LENGTH=32768
+Environment=OLLAMA_FLASH_ATTENTION=1
+Environment=OLLAMA_KV_CACHE_TYPE=q8_0
+Environment=OLLAMA_MAX_LOADED_MODELS=1
+Environment=OLLAMA_KEEP_ALIVE=10m
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
